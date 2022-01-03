@@ -10,7 +10,11 @@
         "main.blocks",
         "main.ts",
         "README.md",
-        "TCS34725.ts"
+        "TCS34725.ts",
+        "DevConfigh.ts",
+        "DevConfig.ts",
+        "TCS34725h.ts",
+        "TCS347XX.ts"
     ],
     "testFiles": [
         "TCS34725.ts"
