@@ -10,15 +10,10 @@
         "main.blocks",
         "main.ts",
         "README.md",
-        "TCS34725.ts",
-        "DevConfigh.ts",
-        "DevConfig.ts",
-        "TCS34725h.ts",
-        "TCS347XX.ts"
+        "TCS347XX.ts",
+        "test.ts"
     ],
-    "testFiles": [
-        "TCS34725.ts"
-    ],
+    "testFiles": [],
     "targetVersions": {
         "target": "4.0.16",
         "targetId": "microbit"
