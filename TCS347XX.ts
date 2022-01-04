@@ -122,23 +122,26 @@ namespace TCS347XX {
     }
     /*  */
     //% block
-    export function RGB(): number {
-        return 0
+    export function RGB(): void {
+        while(1){
+            basic.showNumber(TCS34725_ReadByte(dev.IIC_Addr))
+            serial.writeNumber(TCS34725_ReadByte(dev.IIC_Addr))
+        }
     }
     /* 
         初始化传感器和i2c
      */
     export function TCS347XXinit() {
-        
-        
-
+       
     }
-    //写操作
-    export function i2cWriteNumber(add:number){
+    //读取指定数据
+    export function TCS34725_ReadByte(add:number):number{
+        add = add | dev.TCS34725_CMD_BIT
         pins.i2cWriteNumber(dev.IIC_Addr, add, NumberFormat.Int8LE)
+        return pins.i2cReadNumber(dev.IIC_Addr, NumberFormat.Int8LE)
     }
     //读操作
-    export function i2cReadNumber(add: number) {
-        pins.i2cReadNumber(dev.IIC_Addr, NumberFormat.Int8LE)
+    export function i2cReadNumber(add: number): number{
+        return pins.i2cReadNumber(dev.IIC_Addr, NumberFormat.Int8LE)
     }
 }
