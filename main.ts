@@ -1,6 +1,8 @@
-basic.showString("" + (TCS347XX.B()))
-basic.showString("" + (TCS347XX.G()))
-basic.showString("" + (TCS347XX.R()))
+serial.redirect(
+SerialPin.P12,
+SerialPin.P13,
+BaudRate.BaudRate115200
+)
 basic.forever(function () {
-	
+    TCS347XX.RGB()
 })
