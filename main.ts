@@ -1,6 +1,6 @@
-basic.showString("" + (TCS347XX.B()))
-basic.showString("" + (TCS347XX.G()))
-basic.showString("" + (TCS347XX.R()))
+
 basic.forever(function () {
-	
+    basic.showNumber(TCS347XX.R())
+    basic.showNumber(TCS347XX.G())
+    basic.showNumber(TCS347XX.B())
 })
