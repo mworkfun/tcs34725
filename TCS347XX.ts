@@ -11,7 +11,7 @@ namespace TCS347XX {
         IIC_Addr                    = 0x29,//地址
         
         /* Register */
-        TCS34725_CMD_BIT            = 0x80,//进制转换：16转8
+        TCS34725_CMD_BIT            = 0x80,//进制转换
         TCS34725_CMD_Read_Word      = 0x20,
         
         TCS34725_ENABLE             = 0x00,//寄存器启用
@@ -71,7 +71,7 @@ namespace TCS347XX {
         TCS34725_BDATAH             = 0x1B//
     }
     //全局变量 集成时间、增益
-    let integtime,gain
+    let integtime: number,gain:number
     /*
     RGBC 定时寄存器以 2.4 毫秒为增量
     控制 RGBC 透明和 IR 通道 ADC 的内部集成时间
@@ -80,6 +80,7 @@ namespace TCS347XX {
     enum TCS34725_INTEGTIME{
         TCS34725_INTEGTIME_2_4ms    = 0xFF,//循环1次 2.4ms 最大计数1024
         TCS34725_INTEGTIME_24ms     = 0xF6,//循环10次 24ms 最大计数10240
+        TCS34725_INTEGTIME_50ms     = 0xEB,//循环50次
         TCS34725_INTEGTIME_101ms    = 0xD5,//循环42次 101ms 最大计数43008
         TCS34725_INTEGTIME_154ms    = 0xC0,//循环64次 154ms 最大计数65535
         TCS34725_INTEGTIME_614ms    = 0x00,//循环256次 614ms 最大计数65535
@@ -110,16 +111,57 @@ namespace TCS347XX {
     //% block
     export function B(): number {
         TCS34725_GET_RGB888()
-        return tcsRGB.B
+        if (tcsRGB.B >= 255)
+            return 10
+        else if (255 >= tcsRGB.B && tcsRGB.B >= 200)
+            return 9
+        else if (200 > tcsRGB.B && tcsRGB.B >= 150)
+            return 8
+        else if (150 > tcsRGB.B && tcsRGB.B >= 100)
+            return 7
+        else if (100 > tcsRGB.B && tcsRGB.B >= 50)
+            return 6
+        else if (50 > tcsRGB.B && tcsRGB.B >= 0)
+            return 5
+        else
+            return tcsRGB.B
     }
     //% block
     export function G(): number {
         TCS34725_GET_RGB888()
-        return tcsRGB.G
+        if (tcsRGB.G >= 255)
+            return 10
+        else if (255 >= tcsRGB.G && tcsRGB.G >= 200)
+            return 9
+        else if (200 > tcsRGB.G && tcsRGB.G >= 150)
+            return 8
+        else if (150 > tcsRGB.G && tcsRGB.G >= 100)
+            return 7
+        else if (100 > tcsRGB.G && tcsRGB.G >= 50)
+            return 6
+        else if (50 > tcsRGB.G && tcsRGB.G >= 0)
+            return 5
+        else
+            return tcsRGB.G
     }
     //% block
     export function R(): number {
-        TCS34725_GET_RGB888()
+        //TCS34725_GET_RGB888()
+        TCS34725_GET_RGBC()
+        // if (tcsRGB.B >= 255)
+        //     return 10
+        // else if (255 >= tcsRGB.B && tcsRGB.B >= 200)
+        //     return 9
+        // else if (200 > tcsRGB.B && tcsRGB.B >= 150)
+        //     return 8
+        // else if (150 > tcsRGB.B && tcsRGB.B >= 100)
+        //     return 7
+        // else if (100 > tcsRGB.B && tcsRGB.B >= 50)
+        //     return 6
+        // else if (50 > tcsRGB.B && tcsRGB.B >= 0)
+        //     return 5
+        // else
+        //     return tcsRGB.B
         return tcsRGB.R
     }
     //% block
@@ -153,14 +195,34 @@ namespace TCS347XX {
         TCS34725_Set_Integration_Enable();
         return 1
     }
-    //转换RGB888格式
-    export function TCS34725_GET_RGB888(): void {
-        let i = 1;
-
+    //获取RGBC的值
+    export function TCS34725_GET_RGBC(): void {
         tcsRGB.C = TCS34725_ReadWord(DevConfig.TCS34725_CDATAL | DevConfig.TCS34725_CMD_Read_Word)
         tcsRGB.R = TCS34725_ReadWord(DevConfig.TCS34725_RDATAL | DevConfig.TCS34725_CMD_Read_Word)
         tcsRGB.G = TCS34725_ReadWord(DevConfig.TCS34725_GDATAL | DevConfig.TCS34725_CMD_Read_Word)
         tcsRGB.B = TCS34725_ReadWord(DevConfig.TCS34725_BDATAL | DevConfig.TCS34725_CMD_Read_Word)
+
+        switch (integtime) {
+            case TCS34725_INTEGTIME.TCS34725_INTEGTIME_2_4ms:
+                basic.pause(3)
+            case TCS34725_INTEGTIME.TCS34725_INTEGTIME_24ms:
+                basic.pause(24)
+            case TCS34725_INTEGTIME.TCS34725_INTEGTIME_50ms:
+                basic.pause(50)
+            case TCS34725_INTEGTIME.TCS34725_INTEGTIME_101ms:
+                basic.pause(101)
+            case TCS34725_INTEGTIME.TCS34725_INTEGTIME_154ms:
+                basic.pause(154)
+            case TCS34725_INTEGTIME.TCS34725_INTEGTIME_614ms:
+                basic.pause(700)
+        }
+    }
+    //转换RGB888格式
+    export function TCS34725_GET_RGB888(): void {
+        //获取RGBC的值
+        TCS34725_GET_RGBC()
+
+        let i = 1;
         
         if(tcsRGB.R >= tcsRGB.G && tcsRGB.R >= tcsRGB.B)
             i = tcsRGB.R / 255 + 1
@@ -241,7 +303,7 @@ namespace TCS347XX {
     }
     //读多字节
     export function TCS34725_ReadWord(data: number): number {
-        let t,x
+        let t:number,x:number
         data = data | DevConfig.TCS34725_CMD_BIT
         pins.i2cWriteNumber(DevConfig.IIC_Addr, data, NumberFormat.Int8LE)
         t = pins.i2cReadNumber(DevConfig.IIC_Addr, 2)
