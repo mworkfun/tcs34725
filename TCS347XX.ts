@@ -124,8 +124,6 @@ namespace TCS347XX {
     export function RGB(): void {
         //读传感器ID
         basic.showNumber(TCS34725_ReadByte(DevConfig.TCS34725_ID))
-
-    export function RGB(): void {
     }
     /* 
         初始化传感器和i2c
