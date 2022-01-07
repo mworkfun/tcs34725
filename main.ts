@@ -1,9 +1,8 @@
+basic.showNumber(TCS347XX.INIT())
 basic.forever(function () {
     basic.pause(500)
-    basic.showNumber(1)
-    serial.writeNumber(TCS347XX.R())
-    serial.writeNumber(TCS347XX.G())
-    serial.writeNumber(TCS347XX.B())
-    serial.writeNumber(1)
+    basic.showNumber(TCS347XX.R())
+    basic.showNumber(TCS347XX.G())
+    basic.showNumber(TCS347XX.B())
     basic.pause(500)
 })

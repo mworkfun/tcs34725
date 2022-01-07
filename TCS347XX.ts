@@ -124,20 +124,20 @@ namespace TCS347XX {
     }
     //% block
     export function INIT(): number {
-        if(TCS347XXinit() == 1){
+        if(TCS347XXinit() == 0){
             return 0
         }
         return 1
     }
     /* 
         初始化传感器和i2c 
-        返回0为初始化成功，1为失败
+        返回1为初始化成功，0为失败
      */
     export function TCS347XXinit():number {
         let getDevID = TCS34725_ReadByte(DevConfig.TCS34725_ID)
         //获取到8进制数据，0x44 = 68,0x4d = 77
         if (getDevID != 68 && getDevID !=77){
-            return 1
+            return 0
         }
         //1.设置集成时间
         TCS34725_Set_Integration_Time(TCS34725_INTEGTIME.TCS34725_INTEGTIME_154ms)
@@ -151,7 +151,7 @@ namespace TCS347XX {
         TCS34725_Set_Enable()
         //6.启用中断
         TCS34725_Set_Integration_Enable();
-        return 0
+        return 1
     }
     //转换RGB888格式
     export function TCS34725_GET_RGB888(): void {
