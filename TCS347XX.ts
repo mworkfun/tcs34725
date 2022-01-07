@@ -110,39 +110,43 @@ namespace TCS347XX {
     }
     //% block
     export function B(): number {
-        TCS34725_GET_RGB888()
-        if (tcsRGB.B >= 255)
-            return 10
-        else if (255 >= tcsRGB.B && tcsRGB.B >= 200)
-            return 9
-        else if (200 > tcsRGB.B && tcsRGB.B >= 150)
-            return 8
-        else if (150 > tcsRGB.B && tcsRGB.B >= 100)
-            return 7
-        else if (100 > tcsRGB.B && tcsRGB.B >= 50)
-            return 6
-        else if (50 > tcsRGB.B && tcsRGB.B >= 0)
-            return 5
-        else
-            return tcsRGB.B
+        TCS34725_GET_RGBC()
+        //TCS34725_GET_RGB888()
+        // if (tcsRGB.B >= 255)
+        //     return 10
+        // else if (255 >= tcsRGB.B && tcsRGB.B >= 200)
+        //     return 9
+        // else if (200 > tcsRGB.B && tcsRGB.B >= 150)
+        //     return 8
+        // else if (150 > tcsRGB.B && tcsRGB.B >= 100)
+        //     return 7
+        // else if (100 > tcsRGB.B && tcsRGB.B >= 50)
+        //     return 6
+        // else if (50 > tcsRGB.B && tcsRGB.B >= 0)
+        //     return 5
+        // else
+        //     return tcsRGB.B
+        return tcsRGB.B
     }
     //% block
     export function G(): number {
-        TCS34725_GET_RGB888()
-        if (tcsRGB.G >= 255)
-            return 10
-        else if (255 >= tcsRGB.G && tcsRGB.G >= 200)
-            return 9
-        else if (200 > tcsRGB.G && tcsRGB.G >= 150)
-            return 8
-        else if (150 > tcsRGB.G && tcsRGB.G >= 100)
-            return 7
-        else if (100 > tcsRGB.G && tcsRGB.G >= 50)
-            return 6
-        else if (50 > tcsRGB.G && tcsRGB.G >= 0)
-            return 5
-        else
-            return tcsRGB.G
+        TCS34725_GET_RGBC()
+        //TCS34725_GET_RGB888()
+        // if (tcsRGB.G >= 255)
+        //     return 10
+        // else if (255 >= tcsRGB.G && tcsRGB.G >= 200)
+        //     return 9
+        // else if (200 > tcsRGB.G && tcsRGB.G >= 150)
+        //     return 8
+        // else if (150 > tcsRGB.G && tcsRGB.G >= 100)
+        //     return 7
+        // else if (100 > tcsRGB.G && tcsRGB.G >= 50)
+        //     return 6
+        // else if (50 > tcsRGB.G && tcsRGB.G >= 0)
+        //     return 5
+        // else
+        //     return tcsRGB.G
+        return tcsRGB.G
     }
     //% block
     export function R(): number {
