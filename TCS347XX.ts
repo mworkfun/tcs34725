@@ -171,8 +171,8 @@ namespace TCS347XX {
         
         if(i != 0){
             tcsRGB.R = (tcsRGB.R) / i
-            tcsRGB.G = (tcsRGB.R) / i
-            tcsRGB.B = (tcsRGB.R) / i
+            tcsRGB.G = (tcsRGB.G) / i
+            tcsRGB.B = (tcsRGB.B) / i
         }
         if(tcsRGB.R > 30)
             tcsRGB.R = tcsRGB.R - 30
