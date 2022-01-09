@@ -1,7 +1,11 @@
-serial.redirect(
-SerialPin.P12,
-SerialPin.P13,
-BaudRate.BaudRate115200
-)
+basic.showNumber(TCS347XX.INIT())
 basic.forever(function () {
+    serial.writeString("R:")
+    serial.writeNumber(TCS347XX.R())
+    serial.writeString("G:")
+    serial.writeNumber(TCS347XX.G())
+    serial.writeString("B:")
+    serial.writeNumber(TCS347XX.B())
+    serial.writeNumber(TCS347XX.Interrupt())
+    basic.pause(1000)
 })

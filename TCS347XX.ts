@@ -13,6 +13,7 @@ namespace TCS347XX {
         /* Register */
         TCS34725_CMD_BIT = 0x80,//进制转换
         TCS34725_CMD_Read_Word = 0x20,
+        TCS34725_CMD_Clear_INT = 0x66,
 
         TCS34725_ENABLE = 0x00,//寄存器启用
         TCS34725_ENABLE_AIEN = 0x10,//中断启用
@@ -102,7 +103,7 @@ namespace TCS347XX {
         B: number;
         C: number;
     }
-    let tcsRGB: RGB = {
+    let tcsRGB : RGB ={
         R: 0,
         G: 0,
         B: 0,
@@ -111,61 +112,19 @@ namespace TCS347XX {
     //% block
     export function B(): number {
         TCS34725_GET_RGBC()
-        //TCS34725_GET_RGB888()
-        // if (tcsRGB.B >= 255)
-        //     return 10
-        // else if (255 >= tcsRGB.B && tcsRGB.B >= 200)
-        //     return 9
-        // else if (200 > tcsRGB.B && tcsRGB.B >= 150)
-        //     return 8
-        // else if (150 > tcsRGB.B && tcsRGB.B >= 100)
-        //     return 7
-        // else if (100 > tcsRGB.B && tcsRGB.B >= 50)
-        //     return 6
-        // else if (50 > tcsRGB.B && tcsRGB.B >= 0)
-        //     return 5
-        // else
-        //     return tcsRGB.B
+        TCS34725_GET_RGB888()
         return tcsRGB.B
     }
     //% block
     export function G(): number {
         TCS34725_GET_RGBC()
-        //TCS34725_GET_RGB888()
-        // if (tcsRGB.G >= 255)
-        //     return 10
-        // else if (255 >= tcsRGB.G && tcsRGB.G >= 200)
-        //     return 9
-        // else if (200 > tcsRGB.G && tcsRGB.G >= 150)
-        //     return 8
-        // else if (150 > tcsRGB.G && tcsRGB.G >= 100)
-        //     return 7
-        // else if (100 > tcsRGB.G && tcsRGB.G >= 50)
-        //     return 6
-        // else if (50 > tcsRGB.G && tcsRGB.G >= 0)
-        //     return 5
-        // else
-        //     return tcsRGB.G
+        TCS34725_GET_RGB888()
         return tcsRGB.G
     }
     //% block
     export function R(): number {
-        //TCS34725_GET_RGB888()
         TCS34725_GET_RGBC()
-        // if (tcsRGB.B >= 255)
-        //     return 10
-        // else if (255 >= tcsRGB.B && tcsRGB.B >= 200)
-        //     return 9
-        // else if (200 > tcsRGB.B && tcsRGB.B >= 150)
-        //     return 8
-        // else if (150 > tcsRGB.B && tcsRGB.B >= 100)
-        //     return 7
-        // else if (100 > tcsRGB.B && tcsRGB.B >= 50)
-        //     return 6
-        // else if (50 > tcsRGB.B && tcsRGB.B >= 0)
-        //     return 5
-        // else
-        //     return tcsRGB.B
+        TCS34725_GET_RGB888()
         return tcsRGB.R
     }
     //% block
@@ -173,6 +132,11 @@ namespace TCS347XX {
         if (TCS347XXinit() == 0) {
             return 0
         }
+        return 1
+    }
+    //% block
+    export function Interrupt(): number {
+        TCS34725_GetLux_Interrupt()
         return 1
     }
     /* 
@@ -201,10 +165,10 @@ namespace TCS347XX {
     }
     //获取RGBC的值
     export function TCS34725_GET_RGBC(): void {
-        tcsRGB.C = TCS34725_ReadWord(DevConfig.TCS34725_CDATAL | DevConfig.TCS34725_CMD_Read_Word)
         tcsRGB.R = TCS34725_ReadWord(DevConfig.TCS34725_RDATAL | DevConfig.TCS34725_CMD_Read_Word)
         tcsRGB.G = TCS34725_ReadWord(DevConfig.TCS34725_GDATAL | DevConfig.TCS34725_CMD_Read_Word)
         tcsRGB.B = TCS34725_ReadWord(DevConfig.TCS34725_BDATAL | DevConfig.TCS34725_CMD_Read_Word)
+        tcsRGB.C = TCS34725_ReadWord(DevConfig.TCS34725_CDATAL | DevConfig.TCS34725_CMD_Read_Word)
 
         switch (integtime) {
             case TCS34725_INTEGTIME.TCS34725_INTEGTIME_2_4ms:
@@ -257,6 +221,13 @@ namespace TCS347XX {
         if (tcsRGB.B > 255)
             tcsRGB.B = 255
     }
+    //清除rgbc值
+    export function TCS34725_GetLux_Interrupt(){
+        TCS34725_Set_Integration_Threshold(0xff00, 0x00ff)
+        //if (1)
+        TCS34725_WriteByte(DevConfig.TCS34725_CMD_Clear_INT,0x00)
+        TCS34725_Set_Integration_PPERS(DevConfig.TCS34725_PPERS_CYCLE_2)
+    }
     //启用寄存器
     export function TCS34725_Set_Enable(): void {
         TCS34725_WriteByte(DevConfig.TCS34725_ENABLE, DevConfig.TCS34725_ENABLE_PON)
@@ -301,15 +272,15 @@ namespace TCS347XX {
     //读取字节
     export function TCS34725_ReadByte(data: number): number {
         data = data | DevConfig.TCS34725_CMD_BIT
-        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, NumberFormat.Int8LE)
+        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, 1)
         basic.pause(1)
-        return pins.i2cReadNumber(DevConfig.IIC_Addr, NumberFormat.Int8LE)
+        return pins.i2cReadNumber(DevConfig.IIC_Addr, 1)
     }
     //读多字节
     export function TCS34725_ReadWord(data: number): number {
         let t: number, x: number
         data = data | DevConfig.TCS34725_CMD_BIT
-        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, NumberFormat.Int8LE)
+        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, 1)
         t = pins.i2cReadNumber(DevConfig.IIC_Addr, 2)
         x = pins.i2cReadNumber(DevConfig.IIC_Addr, 2)
         x <<= 8
@@ -319,13 +290,13 @@ namespace TCS347XX {
     //写字节
     export function TCS34725_WriteByte(data: number, data_: number): void {
         data = data | DevConfig.TCS34725_CMD_BIT
-        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, NumberFormat.Int8LE)
+        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, 1)
         data_ = data_ & 0xFF
-        pins.i2cWriteNumber(DevConfig.IIC_Addr, data_, NumberFormat.Int8LE)
+        pins.i2cWriteNumber(DevConfig.IIC_Addr, data_, 1)
     }
     //写多字节
     export function TCS34725_WriteWord(data: number): void {
         data = data | DevConfig.TCS34725_CMD_BIT
-        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, NumberFormat.Int8LE)
+        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, 1)
     }
 }
