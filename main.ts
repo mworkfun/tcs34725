@@ -4,5 +4,4 @@ SerialPin.P13,
 BaudRate.BaudRate115200
 )
 basic.forever(function () {
-    TCS347XX.RGB()
 })
