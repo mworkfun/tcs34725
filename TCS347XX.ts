@@ -13,7 +13,7 @@ namespace TCS347XX {
         /* Register */
         TCS34725_CMD_BIT = 0x80,//进制转换
         TCS34725_CMD_Read_Word = 0x20,
-        TCS34725_CMD_Clear_INT = 0x66,
+        TCS34725_CMD_Clear_INT = 0x10,
 
         TCS34725_ENABLE = 0x00,//寄存器启用
         TCS34725_ENABLE_AIEN = 0x10,//中断启用
@@ -125,50 +125,58 @@ namespace TCS347XX {
     export function R(): number {
         TCS34725_GET_RGBC()
         TCS34725_GET_RGB888()
-        return tcsRGB.R
+        let r = tcsRGB.R
+        return r
     }
     //% block
-    export function INIT(): number {
+    export function C(): number {
+        TCS34725_GET_RGBC()
+        TCS34725_GET_RGB888()
+        let c = tcsRGB.C
+        return c
+    }
+    //% block
+    export function GetDevID(): number {
         if (TCS347XXinit() == 0) {
             return 0
         }
-        return 1
+        return TCS347XXinit()
     }
-    //% block
-    export function Interrupt(): number {
-        TCS34725_GetLux_Interrupt()
-        return 1
-    }
+    // //% block
+    // export function Interrupt(): number {
+    //     TCS34725_GetLux_Interrupt()
+    //     return 1
+    // }
     /* 
         初始化传感器和i2c 
         返回1为初始化成功，0为失败
      */
     export function TCS347XXinit(): number {
-        let getDevID = TCS34725_ReadByte(DevConfig.TCS34725_ID)
+        let getDevID = TCS34725_ReadByte8(DevConfig.TCS34725_ID)
         //获取到8进制数据，0x44 = 68,0x4d = 77
         if (getDevID != 68 && getDevID != 77) {
             return 0
         }
         //1.设置集成时间
-        TCS34725_Set_Integration_Time(TCS34725_INTEGTIME.TCS34725_INTEGTIME_154ms)
+        TCS34725_Set_Integration_Time(TCS34725_INTEGTIME.TCS34725_INTEGTIME_101ms)
         //2.设置增益
         TCS34725_Set_GAIN(TCS34725_GAIN.TCS34725_GAIN_60x)
         //3.设置上下限中断阈值
-        TCS34725_Set_Integration_Threshold(0xff00, 0x00ff)
+        //TCS34725_Set_Integration_Threshold(0xff00, 0x00ff)
         //4.设置中断过滤
-        TCS34725_Set_Integration_PPERS(DevConfig.TCS34725_PPERS_CYCLE_2)
+        //TCS34725_Set_Integration_PPERS(0x03)
         //5.启用寄存器
         TCS34725_Set_Enable()
         //6.启用中断
         TCS34725_Set_Integration_Enable();
-        return 1
+        return getDevID
     }
     //获取RGBC的值
     export function TCS34725_GET_RGBC(): void {
-        tcsRGB.R = TCS34725_ReadWord(DevConfig.TCS34725_RDATAL | DevConfig.TCS34725_CMD_Read_Word)
-        tcsRGB.G = TCS34725_ReadWord(DevConfig.TCS34725_GDATAL | DevConfig.TCS34725_CMD_Read_Word)
-        tcsRGB.B = TCS34725_ReadWord(DevConfig.TCS34725_BDATAL | DevConfig.TCS34725_CMD_Read_Word)
-        tcsRGB.C = TCS34725_ReadWord(DevConfig.TCS34725_CDATAL | DevConfig.TCS34725_CMD_Read_Word)
+        tcsRGB.R = TCS34725_ReadByte16(DevConfig.TCS34725_RDATAL | DevConfig.TCS34725_CMD_Read_Word)
+        tcsRGB.G = TCS34725_ReadByte16(DevConfig.TCS34725_GDATAL | DevConfig.TCS34725_CMD_Read_Word)
+        tcsRGB.B = TCS34725_ReadByte16(DevConfig.TCS34725_BDATAL | DevConfig.TCS34725_CMD_Read_Word)
+        tcsRGB.C = TCS34725_ReadByte16(DevConfig.TCS34725_CDATAL | DevConfig.TCS34725_CMD_Read_Word)
 
         switch (integtime) {
             case TCS34725_INTEGTIME.TCS34725_INTEGTIME_2_4ms:
@@ -225,78 +233,67 @@ namespace TCS347XX {
     export function TCS34725_GetLux_Interrupt(){
         TCS34725_Set_Integration_Threshold(0xff00, 0x00ff)
         //if (1)
-        TCS34725_WriteByte(DevConfig.TCS34725_CMD_Clear_INT,0x00)
-        TCS34725_Set_Integration_PPERS(DevConfig.TCS34725_PPERS_CYCLE_2)
+        TCS34725_WriteByte1(DevConfig.TCS34725_CMD_Clear_INT,0x00)
+        TCS34725_Set_Integration_PPERS(0x03)
     }
     //启用寄存器
     export function TCS34725_Set_Enable(): void {
-        TCS34725_WriteByte(DevConfig.TCS34725_ENABLE, DevConfig.TCS34725_ENABLE_PON)
+        TCS34725_WriteByte1(DevConfig.TCS34725_ENABLE | DevConfig.TCS34725_CMD_BIT, DevConfig.TCS34725_ENABLE_PON)
         basic.pause(3);
         let data = DevConfig.TCS34725_ENABLE_PON | DevConfig.TCS34725_ENABLE_AEN
-        TCS34725_WriteByte(DevConfig.TCS34725_ENABLE, data)
+        TCS34725_WriteByte1(DevConfig.TCS34725_ENABLE, data)
     }
     //启用中断
     export function TCS34725_Set_Integration_Enable(): void {
         let data = 0
         //启用时先读寄存器
-        data = TCS34725_ReadByte(DevConfig.TCS34725_ENABLE)
-        TCS34725_WriteByte(DevConfig.TCS34725_ENABLE, data | DevConfig.TCS34725_ENABLE_AIEN);
+        data = TCS34725_ReadByte16(DevConfig.TCS34725_ENABLE)
+        TCS34725_WriteByte1(DevConfig.TCS34725_ENABLE, data | DevConfig.TCS34725_ENABLE_AIEN);
     }
     //设置集成时间
     export function TCS34725_Set_Integration_Time(data: number): void {
-        TCS34725_WriteByte(DevConfig.TCS34725_ATIME, data)
+        TCS34725_WriteByte1(DevConfig.TCS34725_ATIME, data)
         integtime = data
     }
     //设置增益
     export function TCS34725_Set_GAIN(data: number): void {
-        TCS34725_WriteByte(DevConfig.TCS34725_CONTROL_REGS, data)
+        TCS34725_WriteByte1(DevConfig.TCS34725_CONTROL_REGS, data)
         gain = data
     }
     //设置上下限中断阈值
     export function TCS34725_Set_Integration_Threshold(data_h: number, data_l: number): void {
-        TCS34725_WriteByte(DevConfig.TCS34725_AITL, data_l & 0xff)
-        TCS34725_WriteByte(DevConfig.TCS34725_AILTH, data_l >> 8)
-        TCS34725_WriteByte(DevConfig.TCS34725_AIHTL, data_h & 0xff)
-        TCS34725_WriteByte(DevConfig.TCS34725_AIHTH, data_h >> 8)
+        TCS34725_WriteByte1(DevConfig.TCS34725_AITL, data_l & 0xff)
+        TCS34725_WriteByte1(DevConfig.TCS34725_AILTH, data_l >> 8)
+        TCS34725_WriteByte1(DevConfig.TCS34725_AIHTL, data_h & 0xff)
+        TCS34725_WriteByte1(DevConfig.TCS34725_AIHTH, data_l >> 8)
     }
     //设置中断过滤
     export function TCS34725_Set_Integration_PPERS(data: number): void {
         if (data < 0x10)
-            TCS34725_WriteByte(DevConfig.TCS34725_PPERS, data)
+            TCS34725_WriteByte1(DevConfig.TCS34725_PPERS, data)
         else
-            TCS34725_WriteByte(DevConfig.TCS34725_PPERS, DevConfig.TCS34725_PPERS_CYCLE_60)
+            TCS34725_WriteByte1(DevConfig.TCS34725_PPERS, DevConfig.TCS34725_PPERS_CYCLE_30)
     }
     /* 
         读写地址/数据
      */
-    //读取字节
-    export function TCS34725_ReadByte(data: number): number {
-        data = data | DevConfig.TCS34725_CMD_BIT
-        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, 1)
-        basic.pause(1)
-        return pins.i2cReadNumber(DevConfig.IIC_Addr, 1)
-    }
-    //读多字节
-    export function TCS34725_ReadWord(data: number): number {
-        let t: number, x: number
-        data = data | DevConfig.TCS34725_CMD_BIT
-        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, 1)
-        t = pins.i2cReadNumber(DevConfig.IIC_Addr, 2)
-        x = pins.i2cReadNumber(DevConfig.IIC_Addr, 2)
-        x <<= 8
-        x |= t
-        return x
-    }
     //写字节
-    export function TCS34725_WriteByte(data: number, data_: number): void {
-        data = data | DevConfig.TCS34725_CMD_BIT
-        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, 1)
-        data_ = data_ & 0xFF
-        pins.i2cWriteNumber(DevConfig.IIC_Addr, data_, 1)
+    export function TCS34725_WriteByte1(data: number, data_: number): void {
+        let rg = pins.createBuffer(2)
+        rg[0] = data
+        rg[1] = data_
+        pins.i2cWriteBuffer(DevConfig.IIC_Addr, rg);
     }
-    //写多字节
-    export function TCS34725_WriteWord(data: number): void {
+    //读取字节
+    export function TCS34725_ReadByte8(data: number): number {
         data = data | DevConfig.TCS34725_CMD_BIT
-        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, 1)
+        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, NumberFormat.UInt8BE)
+        return pins.i2cReadNumber(DevConfig.IIC_Addr, NumberFormat.UInt8BE)
+    }
+    //读取字节
+    export function TCS34725_ReadByte16(data: number): number {
+        data = data | DevConfig.TCS34725_CMD_BIT
+        pins.i2cWriteNumber(DevConfig.IIC_Addr, data, NumberFormat.UInt8BE)
+        return pins.i2cReadNumber(DevConfig.IIC_Addr, NumberFormat.UInt16LE)
     }
 }
